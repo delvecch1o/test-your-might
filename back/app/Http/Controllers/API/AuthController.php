@@ -77,6 +77,7 @@ class AuthController extends Controller
             )]
         );
         return response()->json([
+            'provider' => $provider,
             'details' => $data,
             'message' => 'Login Com Sucesso!'
         ]);
