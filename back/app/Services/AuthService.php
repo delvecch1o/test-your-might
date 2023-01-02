@@ -89,7 +89,7 @@ class AuthService
         }
         else
         {
-            return 'ERRO';
+            throw new UnauthorizedHttpException('message', 'Erro, não autorizado');
         }
     }
 
