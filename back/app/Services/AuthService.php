@@ -31,7 +31,6 @@ class AuthService
                 
             ];
         
-        
     }
 
     public function createRetailer($name, $email, $password, $cnpj)
@@ -55,4 +54,48 @@ class AuthService
         
     }
 
+    public function login($provider, $email, $password)
+    {
+        if($provider == 'user')
+        {
+            $user = User::where('email', $email)->first();
+            if(!$user || !Hash::check($password, $user->password))
+            {
+                throw new UnauthorizedHttpException('message', 'Credenciais Invalidas');
+            } else
+            {
+                $token = $user->createToken($user->email . '_Token')->plainTextToken;
+                return [
+                    'user' => $user,
+                    'token' => $token
+                ];
+            }
+        }
+        elseif($provider == 'retailer')
+        {
+            $retailer = Retailer::where('email', $email)->first();
+            if(!$retailer || !Hash::check($password, $retailer->password))
+            {
+                throw new UnauthorizedHttpException('message', 'Credenciais Invalidas');
+            } else
+            {
+                $token = $retailer->createToken($retailer->email . '_Token')->plainTextToken;
+                return [
+                    'retailer' => $retailer,
+                    'token' => $token
+                ];
+            }
+
+        }
+        else
+        {
+            return 'ERRO';
+        }
+    }
+
+    public function logout()
+    {
+        auth()->user()->tokens()->delete(); 
+    }
+    
 }
