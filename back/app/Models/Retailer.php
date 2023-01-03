@@ -33,4 +33,9 @@ class Retailer extends Model implements AuthenticatableContract
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
 }
