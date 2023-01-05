@@ -7,9 +7,8 @@ use App\Http\Controllers\API\WalletController;
 use App\Http\Controllers\API\TransactionController;
 
 Route::post('auth/user', [ AuthController::class, 'User']);
-Route::post('auth/retailer', [ AuthController::class, 'Retailer']);
 
-Route::post('login/{provider}', [ AuthController::class, 'login']);
+Route::post('login', [ AuthController::class, 'login']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     

@@ -22,9 +22,10 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'type_user',
         'name',
         'email',
-        'cpf',
+        'CpfOrCnpj',
         'password'
     ];
 
@@ -49,6 +50,7 @@ class User extends Authenticatable
 
     public function wallet()
     {
-        return $this->hasOne(Wallet:: class);
+        return $this->hasOne(Wallet::class);
     }
+
 }

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\Retailer;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Exception;
@@ -11,85 +10,44 @@ use Exception;
 class AuthService
 {
 
-    public function createUser($name, $email, $password, $cpf)
+    public function createUser($type_user, $name, $email, $password, $CpfOrCnpj)
     {
-    
         $user = User::create([
+            'type_user' => $type_user,
             'name' => $name,
             'email' => $email,
             'password' => Hash::make($password),
-            'cpf' => $cpf,
+            'CpfOrCnpj' => $CpfOrCnpj,
            
                     
         ]);
 
         $token = $user->createToken($user->email . '_Token')->plainTextToken;
-            return [
+        return [
             'user' => $user,
-            'token' => $token,
-                
-            ];
-        
-    }
-
-    public function createRetailer($name, $email, $password, $cnpj)
-    {
-    
-        $retailer = Retailer::create([
-            'name' => $name,
-            'email' => $email,
-            'password' => Hash::make($password),
-            'cnpj' => $cnpj,
-                    
-        ]);
-
-        $token = $retailer->createToken($retailer->email . '_Token')->plainTextToken;
-            return [
-            'retailer' => $retailer,
             'token' => $token,
                 
         ];
         
-        
     }
 
-    public function login($provider, $email, $password)
+    public function login($email, $password)
     {
-        if($provider == 'user')
+        $user = User::where('email', $email)->first();
+        
+        if(!$user || !Hash::check($password, $user->password))
         {
-            $user = User::where('email', $email)->first();
-            if(!$user || !Hash::check($password, $user->password))
-            {
-                throw new UnauthorizedHttpException('message', 'Credenciais Invalidas');
-            } else
-            {
-                $token = $user->createToken($user->email . '_Token')->plainTextToken;
-                return [
-                    'user' => $user,
-                    'token' => $token
-                ];
-            }
-        }
-        elseif($provider == 'retailer')
-        {
-            $retailer = Retailer::where('email', $email)->first();
-            if(!$retailer || !Hash::check($password, $retailer->password))
-            {
-                throw new UnauthorizedHttpException('message', 'Credenciais Invalidas');
-            } else
-            {
-                $token = $retailer->createToken($retailer->email . '_Token')->plainTextToken;
-                return [
-                    'retailer' => $retailer,
-                    'token' => $token
-                ];
-            }
-
-        }
+             throw new UnauthorizedHttpException('message', 'Credenciais Invalidas');
+        } 
         else
         {
-            throw new UnauthorizedHttpException('message', 'Erro, não autorizado');
+            $token = $user->createToken($user->email . '_Token')->plainTextToken;
+            return [
+                'user' => $user,
+                'token' => $token
+            ];
         }
+        
     }
 
     public function logout()

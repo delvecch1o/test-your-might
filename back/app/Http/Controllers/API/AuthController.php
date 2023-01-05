@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\AuthService;
 use App\Http\Requests\UserRequest;
-use App\Http\Requests\RetailerRequest;
 use App\Http\Requests\LoginRequest;
 
 
@@ -25,10 +24,11 @@ class AuthController extends Controller
         $data = $this->authService->createUser(
              ...array_values(
                 $request->only([
+                    'type_user',
                     'name',
                     'email',
                     'password',
-                    'cpf'
+                    'CpfOrCnpj',
                       
                 ])
             )
@@ -42,42 +42,17 @@ class AuthController extends Controller
         ]);
     }
 
-    public function Retailer(RetailerRequest $request)
+    public function login(LoginRequest $request)
     {
-        $data = $this->authService->createRetailer(
+        $data = $this->authService->login(
              ...array_values(
                 $request->only([
-                    'name',
                     'email',
-                    'password',
-                    'cnpj'
-                    
-                    
+                    'password'
                 ])
             )
         );
         return response()->json([
-            'status' => 200,
-            'username'=> $data['retailer']->name,
-            'token' => $data['token'],
-            'message' => 'Varejista cadastrado com Sucesso!'
-           
-        ]);
-    }
-
-    public function login(LoginRequest $request, $provider)
-    {
-        $data = $this->authService->login(
-            ...[$provider, ...array_values(
-                $request->only([
-                    'provider',
-                    'email',
-                    'password'
-                ])
-            )]
-        );
-        return response()->json([
-            'provider' => $provider,
             'details' => $data,
             'message' => 'Login Com Sucesso!'
         ]);
