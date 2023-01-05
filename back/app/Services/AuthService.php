@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Retailer;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-//use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Exception;
 
 class AuthService

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\WalletController;
+use App\Http\Controllers\API\TransactionController;
 
 Route::post('auth/user', [ AuthController::class, 'User']);
 Route::post('auth/retailer', [ AuthController::class, 'Retailer']);
@@ -16,6 +17,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     
     Route::post('wallet', [WalletController::class, 'create']);
     Route::get('wallet/show', [WalletController::class, 'show']);
+
+    Route::post('transaction', [TransactionController::class, 'postTransaction']);
+   
   
 
 });

@@ -14,33 +14,23 @@ class Wallet extends Model
     use HasFactory, softDeletes;
 
     protected $fillable = [
-        'wallet',
         'balance',
         
     ];
 
-    public function transactions()
+    public function transactionsAsPayer()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Transaction::class, 'payer_wallet_id');
+    }
+
+    public function transactionsAsPayee()
+    {
+        return $this->hasMany(Transaction::class, 'payee_wallet_id');
     }
 
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function deposit($value)
-    {
-        $this->update([
-            'balance' => $this->attributes['balance'] + $value
-        ]);
-    }
-
-    public function withdraw($value)
-    {
-        $this->update([
-            'balance' => $this->attributes['balance'] - $value
-        ]);
     }
 
 }

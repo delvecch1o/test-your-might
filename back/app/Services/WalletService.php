@@ -7,11 +7,10 @@ use Illuminate\Support\Facades\Auth;
 
 class WalletService
 {
-    public function createService($wallet, $balance)
+    public function createService($balance)
     {
         $user = Auth::user();
         $balance = $user->wallet()->create([
-            'wallet' => $wallet,
             'balance' => $balance
         ]);
 

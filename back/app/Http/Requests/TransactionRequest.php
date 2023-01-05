@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class WalletRequest extends FormRequest
+class TransactionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,14 +24,19 @@ class WalletRequest extends FormRequest
     public function rules()
     {
         return [
-            'balance' => 'required|numeric'
+            'amount' => 'required|numeric|gt:0',
+            'payee_id' => 'required|string',
         ];
     }
 
     public function messages()
     {
-        return [
-            'balance.required' => 'O saldo inicial é obrigatório',
-        ];
+       return[
+        'amount.required' => 'O Valor é obrigatório',
+        'amount.numeric' => 'Por favor insira um valor válido',
+        'amount.min' => 'O Valor deve ser maior que 0 para a transferencia',
+        'payee_id.required' => 'O Beneficiario da transação é obrigatório'
+        
+       ] ;
     }
 }

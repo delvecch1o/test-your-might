@@ -21,7 +21,6 @@ class WalletController extends Controller
         $balance = $this->walletService->createService(
             ...array_values(
                 $request->only([
-                    'wallet',
                     'balance'
                 ])
             )
