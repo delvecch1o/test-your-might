@@ -9,77 +9,72 @@ use Ramsey\Uuid\Uuid;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use App\Services\MockyService;
+use App\Services\AuthorizedTransactionService;
 
 class TransactionService
 {
-    private MockyService $mockyService;
-    public function __construct(MockyService $mockyService)
+    private AuthorizedTransactionService $authorizedTransactionService;
+    public function __construct(AuthorizedTransactionService $authorizedTransactionService)
     {
-        $this->mockyService = $mockyService;
+        $this->authorizedTransactionService = $authorizedTransactionService;
     }
 
     public function makeTransaction(User $payer, User $payee, float $amount)
     {
-        $payerWallet = Auth::user()->type_user;
-        if($payerWallet == 'retailer')
-        {
-            throw ValidationException::withMessages(
-                ['message' => 
-                'Lojista não pode realizar transferência',
-                'Type User => ' .$payerWallet
-            ]);
-        }
-        else
-        {
-            $payerWallet =  $payer->wallet()->first();
-            if($payerWallet->balance == 0)
-            {
-                throw ValidationException::withMessages(
-                    ['message' => 
-                    'Não foi possivel realizar a transação porque sua carteira esta vazia',
-                  'Saldo => '  .$payerWallet->balance
-                    ]);
-                    
-            }
-            else
-            {
-            $payeeWallet = $payee->wallet()->first();
-                $payload =[
-                    'id' => Uuid::uuid4()->toString(),
-                    'payer_wallet_id' =>  $payerWallet->id,
-                    'payee_wallet_id' => $payeeWallet->id,
-                    'amount' => $amount,
-                ];
-
-            }
-           
-
-        }
+    $userType = Auth::user()->type_user;
+    if($userType === 'retailer')
+    {
+        throw ValidationException::withMessages(
+            ['message' => 
+            'Lojista não pode realizar transferência',
+            'Type User => ' .$userType
+        ]);
+    }
     
-        return DB::transaction(function () use ($payload, $payerWallet, $payeeWallet, $amount){
-
-            $transaction = Transaction::create($payload);
+    $payerWallet =  $payer->wallet()->first();
+    if($payerWallet->balance < $amount)
+    {
+        throw ValidationException::withMessages(
+            ['message' => 
+            'Você não tem saldo suficiente para fazer esta transação',
+            'Saldo => ' .$payerWallet->balance
+        ]);
             
-            if($payerWallet->balance >= $amount){
-                $payerWallet->balance -= $amount;
-                $payerWallet->save();
-                $payerWallet = $this->mockyService->authorizeTransaction();
-            
-            } else{
-                throw ValidationException::withMessages(
-                    ['message' => 
-                    'Você não tem dinhero suficiente para fazer esta transação',
-                    'Saldo => ' .$payerWallet->balance
-                ]);
-            }
-            
-            $payeeWallet->balance += $amount;
-            $payeeWallet->save();
-            
-            return $transaction;
-        });
     }
 
+    if(!$this->authorizedTransactionService->authorizeTransaction())
+    {
+        throw ValidationException::withMessages(
+            ['message' => 
+            'Transação não autorizada'
+            
+        ]);
+    }
+        
+    $payeeWallet = $payee->wallet()->first();
+        $payload =[
+            'id' => Uuid::uuid4()->toString(),
+            'payer_wallet_id' =>  $payerWallet->id,
+            'payee_wallet_id' => $payeeWallet->id,
+            'amount' => $amount,
+        ];
+
+
+        $transactionResult = DB::transaction(function () use ($payload, $payerWallet, $payeeWallet, $amount){
+
+            $transaction = Transaction::create($payload);
+        
+            $payerWallet->balance -= $amount;
+            $payerWallet->save();
+
+            $payeeWallet->balance += $amount;
+            $payeeWallet->save();
+
+            return $transaction;
+        });
+
+        $this->authorizedTransactionService->notifyUser();
+        return $transactionResult;
+    }
    
 }
