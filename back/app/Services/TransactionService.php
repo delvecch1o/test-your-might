@@ -9,9 +9,16 @@ use Ramsey\Uuid\Uuid;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use App\Services\MockyService;
 
 class TransactionService
 {
+    private MockyService $mockyService;
+    public function __construct(MockyService $mockyService)
+    {
+        $this->mockyService = $mockyService;
+    }
+
     public function makeTransaction(User $payer, User $payee, float $amount)
     {
         $payerWallet = Auth::user()->type_user;
@@ -57,7 +64,8 @@ class TransactionService
             if($payerWallet->balance >= $amount){
                 $payerWallet->balance -= $amount;
                 $payerWallet->save();
-
+                $payerWallet = $this->mockyService->authorizeTransaction();
+            
             } else{
                 throw ValidationException::withMessages(
                     ['message' => 
